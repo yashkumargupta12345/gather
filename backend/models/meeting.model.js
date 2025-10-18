@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 
+// creating meeting schema
 const meetingSchema = new mongoose.Schema({
     userId: {
         type: String
@@ -8,11 +9,11 @@ const meetingSchema = new mongoose.Schema({
         type: String, required: true
     },
     date: {
-        type: Date, default: Date.now, required: true
+        type: Date, default: Date.now
     }
 })
 
 
 const Meeting = mongoose.model("Meeting", meetingSchema)
 
-export {Meeting}
+export { Meeting }
