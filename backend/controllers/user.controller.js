@@ -8,7 +8,7 @@ import crypto from "crypto";
 export const login = async (req, res) => {
     const { userName, password } = req.body
     if (!userName || !password) {
-        return res.status(400).json({ message: "Please provide Username and Password. " })
+        return res.status(400).json({ message: "Please provide Username and Password." })
     }
     try {
         const user = await User.findOne({ userName })
@@ -16,11 +16,15 @@ export const login = async (req, res) => {
             return res.status(httpStatus.NOT_FOUND).json({ message: "User not found!" })
         }
 
-        if (bcrypt.compare(password, user.password)) {
+        const isPasswordCorrect = await bcrypt.compare(password, user.password)
+
+        if (isPasswordCorrect) {
             let token = crypto.randomBytes(20).toString("hex")
             user.token = token
             await user.save()
             return res.status(httpStatus.OK).json({ token: token })
+        } else {
+            return res.status(httpStatus.UNAUTHORIZED).json({ message: "Invalid username or password" })
         }
     } catch (error) {
         return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ message: `Something went wrong ${error}` })
@@ -31,10 +35,15 @@ export const login = async (req, res) => {
 // User Register controller
 export const register = async (req, res) => {
     const { name, userName, password } = req.body
+
+    if (!name || !userName || !password) {
+        return res.status(httpStatus.BAD_REQUEST).json({ message: "Please provide all required fields" })
+    }
+
     try {
         const existingUser = await User.findOne({ userName })
         if (existingUser) {
-            return res.status(httpStatus.FOUND).json({ message: "User already exists" })
+            return res.status(httpStatus.CONFLICT).json({ message: "User already exists" })
         }
         const hashedPassword = await bcrypt.hash(password, 10)
         const newUser = new User({
@@ -47,6 +56,6 @@ export const register = async (req, res) => {
 
         res.status(httpStatus.CREATED).json({ message: "User registered!" })
     } catch (error) {
-        res.json({ message: `Something went wrong ${error}` })
+        res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ message: `Something went wrong ${error}` })
     }
 }
