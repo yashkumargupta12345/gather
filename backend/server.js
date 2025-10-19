@@ -7,6 +7,7 @@ import connectToDB from './configs/db.js';
 
 // Import statements for routes
 import userRouter from './routes/user.route.js';
+import { connectToSocket } from './controllers/socketManager.js';
 
 // MongoDB Connection
 dotenv.config()
@@ -23,7 +24,7 @@ app.use(express.json())
 // User Routes
 app.use("/api/v1/users", userRouter);
 
-const io = new Server(server)
+const io = connectToSocket(server)
 
 server.listen(PORT, () => {
     console.log(`Backend server is listening on port ${PORT}`);
